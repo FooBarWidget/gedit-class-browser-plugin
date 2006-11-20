@@ -122,7 +122,7 @@ class PythonFile(Token):
 
     def parse(self, verbose=True):
 
-        if verbose: print "parse ----------------------------------------------"
+        #if verbose: print "parse ----------------------------------------------"
         newtokenlist = []
 
         indent = 0
@@ -154,10 +154,10 @@ class PythonFile(Token):
                 if lastToken: lastToken.end = linecount
                 newtokenlist.append(token)
 
-                if verbose: print "appending",token.name,
+                #if verbose: print "appending",token.name,
                 if token.indent == indent:
                     # as deep as the last row: append the last e's parent
-                    if verbose: print "(%i == %i)"%(token.indent,indent),
+                    #if verbose: print "(%i == %i)"%(token.indent,indent),
                     if lastToken: p = lastToken.parent
                     else: p = self
                     p.children.append(token)
@@ -166,7 +166,7 @@ class PythonFile(Token):
 
                 elif token.indent > indent:
                     # this row is deeper than the last, use last e as parent
-                    if verbose: print "(%i > %i)"%(token.indent,indent),
+                    #if verbose: print "(%i > %i)"%(token.indent,indent),
                     if lastToken: p = lastToken
                     else: p = self
                     p.children.append(token)
@@ -175,7 +175,7 @@ class PythonFile(Token):
 
                 elif token.indent < indent:
                     # this row is shallower than the last
-                    if verbose: print "(%i < %i)"%(token.indent,indent),
+                    #if verbose: print "(%i < %i)"%(token.indent,indent),
                     if token.indent in indentDictionary.keys():
                         p = indentDictionary[ token.indent ].parent
                     else: p = self
@@ -183,7 +183,7 @@ class PythonFile(Token):
                     p.children.append(token)
                     token.parent = p
 
-                if verbose: print "to",token.parent.name
+                #if verbose: print "to",token.parent.name
                 idx = len(newtokenlist) - 1
                 if idx < len(self.tokens):
                     if newtokenlist[idx].original == self.tokens[idx].original:
