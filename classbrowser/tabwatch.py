@@ -42,14 +42,16 @@ class TabWatch:
         self.languageParsers[mimetype] = parser  
     
     def __tab_added_or_activated(self, window, tab):
-        doc = tab.get_document()
-        self.__register(doc,tab)
-        if doc != self.currentDoc: self.update(doc)
+        self.__register(tab.get_document(),tab)
+
+        doc = self.geditwindow.get_active_document()
+        if doc != self.currentDoc: self.__update()
 
     def __tab_removed(self, window, tab):
-        doc = tab.get_document()
-        self.__unregister(doc)
-        self.update(self.geditwindow.get_active_document())
+        self.__unregister(tab.get_document())
+
+        doc = self.geditwindow.get_active_document()
+        if doc != self.currentDoc: self.__update()
 
     def __register(self, doc,tab):
         if doc is None: return
@@ -60,7 +62,7 @@ class TabWatch:
         tab.get_view().connect_after("move-cursor",self.browser.update_cursor)
 
         doc.set_modified(True)
-        doc.connect("modified-changed",self.update)
+        doc.connect("modified-changed",self.__update)
         if options.singleton().verbose: print "added:",uri
 
     def __unregister(self, doc):
@@ -68,16 +70,19 @@ class TabWatch:
         uri = doc.get_uri()
         if uri not in self.openfiles: return
         self.openfiles.remove(uri)  
-        if options.singleton().verbose: print "removed:",uri
+        #if options.singleton().verbose: print "removed:",uri
 
-    def update(self, doc):
+    def __update(self, *args):
+        doc = self.geditwindow.get_active_document()
         if doc:
+                
             lang = doc.get_language()
             if lang:
                 m = lang.get_name()
                 if m in self.languageParsers: parser = self.languageParsers[m]
                 else: parser = self.defaultparser
-                if options.singleton().verbose: print "parser with",parser.__class__.__name__
+                if options.singleton().verbose:
+                    print "parse %s (%s)"%(doc.get_uri(),parser.__class__.__name__)
                 model = parser.parse(doc)
                 self.browser.set_model(model, parser)
                 self.currentDoc = doc
