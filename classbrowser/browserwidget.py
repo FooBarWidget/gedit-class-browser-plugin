@@ -191,6 +191,11 @@ class ClassBrowser( gtk.VBox ):
             if line != self.previousline:
                 self.previousline = line
                 if options.singleton().verbose: print "current line:",line
+
+                # pipe the current line to the parser
+                self.parser.current_line_changed(doc, line)
+
+                # set cursor on the tag the cursor is pointing to
                 try:
                     path = self.parser.get_tag_at_line(self.browser.get_model(),doc,line)
                     if path:

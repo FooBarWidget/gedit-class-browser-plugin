@@ -109,9 +109,11 @@ class PythonFile(Token):
         Token.__init__(self)
         self.doc = doc
         self.uri = doc.get_uri()
+        self.linestotal = 0 # total line count
         self.type = "file"
         self.name = os.path.basename(self.uri)
         self.tokens = []
+
 
     def getTokenAtLine(self, line):
         """ get the token at the specified line number """
@@ -119,6 +121,7 @@ class PythonFile(Token):
             if token.start <= line and token.end > line:
                 return token
         return None
+
 
     def parse(self, verbose=True):
 
@@ -132,6 +135,8 @@ class PythonFile(Token):
 
         lastToken = None
         indentDictionary = { 0: self, } # indentation level: token
+
+        self.linestotal = self.doc.get_line_count()
 
         text = self.doc.get_text(*self.doc.get_bounds())
         linecount = -1
@@ -215,6 +220,7 @@ class PythonParser( ClassParserInterface ):
     def __init__(self):
         self.pythonfile = None
 
+
     def appendTokenToBrowser(self, token, parentit ):
         it = self.browsermodel.append(parentit,(token,))
         token.path = self.browsermodel.get_path(it)
@@ -224,6 +230,7 @@ class PythonParser( ClassParserInterface ):
         #        pass
         for child in token.children:
             self.appendTokenToBrowser(child, it)
+
 
     def parse(self, doc):
         """ 
@@ -239,15 +246,39 @@ class PythonParser( ClassParserInterface ):
         for child in self.pythonfile.children:
             self.appendTokenToBrowser(child,None)
         return self.browsermodel
+
         
     def get_tag_position(self, model, path):
         tok = model.get_value( model.get_iter(path), 0 )
         return tok.pythonfile.uri, tok.start+1
 
+
+    def current_line_changed(self, doc, line):
+
+        # parse again if line count changed
+        if abs(self.pythonfile.linestotal - doc.get_line_count()) > 0:
+            if abs(self.pythonfile.linestotal - doc.get_line_count()) > 5:
+                if options.singleton().verbose:
+                    print "PythonParser: refresh because line dif > 5"
+                self.pythonfile.parse()
+            else:
+                it = doc.get_iter_at_line(line)
+                a = it.copy(); b = it.copy()
+                a.backward_line(); a.backward_line()
+                b.forward_line(); b.forward_line()
+
+                t = doc.get_text(a,b)
+                if t.find("class") >= 0 or t.find("def") >= 0:
+                    if options.singleton().verbose:
+                        print "PythonParser: refresh because line cound changed near keyword"
+                    self.pythonfile.parse()
+ 
+
     def get_tag_at_line(self, model, doc, linenumber):
         t = self.pythonfile.getTokenAtLine(linenumber)
         #print linenumber,t
         if t: return t.path
+
 
     def cellrenderer(self, column, ctr, model, it):
         """ Render the browser cell according to the token it represents. """

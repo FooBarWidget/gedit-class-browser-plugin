@@ -57,7 +57,17 @@ class ClassParserInterface:
         path -- a tuple containing the treepath
         """
         return []
+
+    
+    def current_line_changed(self, doc, line):
+        """ Called when the cursor points to a different line in the document.
+        Can be used to monitor changes in the document.
         
+        doc -- a gedit document
+        line -- int
+        """
+        pass    
+  
         
     def get_tag_at_line(self, model, doc, linenumber):
         """ Return a treepath to the tag at the given line number, or None if a
