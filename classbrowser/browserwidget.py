@@ -49,7 +49,7 @@ class ClassBrowser( gtk.VBox ):
         tb = gtk.Toolbar()
         tb.add(self.back)
         tb.add(self.forward)
-        self.pack_start(tb,False,False)
+        #self.pack_start(tb,False,False)
 
         # add a treeview
         sw = gtk.ScrolledWindow()
