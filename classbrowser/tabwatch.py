@@ -43,7 +43,6 @@ class TabWatch:
     
     def __tab_added_or_activated(self, window, tab):
         self.__register(tab.get_document(),tab)
-
         doc = self.geditwindow.get_active_document()
         if doc != self.currentDoc: self.__update()
 
@@ -77,14 +76,16 @@ class TabWatch:
         if doc:
                 
             lang = doc.get_language()
+            parser = self.defaultparser
             if lang:
                 m = lang.get_name()
                 if m in self.languageParsers: parser = self.languageParsers[m]
-                else: parser = self.defaultparser
-                if options.singleton().verbose:
-                    print "parse %s (%s)"%(doc.get_uri(),parser.__class__.__name__)
-                model = parser.parse(doc)
-                self.browser.set_model(model, parser)
-                self.currentDoc = doc
+
+            if options.singleton().verbose:
+                print "parse %s (%s)"%(doc.get_uri(),parser.__class__.__name__)
+            model = parser.parse(doc)
+            self.browser.set_model(model, parser)
+            self.currentDoc = doc
+
         else:
             self.browser.set_model(None)
