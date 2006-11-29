@@ -19,6 +19,7 @@ import gtk
 import gobject
 import gedit
 import options
+import imagelibrary
 
 class ClassBrowser( gtk.VBox ):
     """ A widget that resides in gedits side panel. """
@@ -26,6 +27,8 @@ class ClassBrowser( gtk.VBox ):
     def __init__(self, geditwindow):
         """ geditwindow -- an instance of gedit.Window """
         
+        imagelibrary.initialise()
+
         gtk.VBox.__init__(self)
         self.geditwindow = geditwindow
 
@@ -64,8 +67,12 @@ class ClassBrowser( gtk.VBox ):
         # add a text column to the treeview
         self.column = gtk.TreeViewColumn()
         self.browser.append_column(self.column)
+
+        self.cellrendererpixbuf = gtk.CellRendererPixbuf()
+        self.column.pack_start(self.cellrendererpixbuf,False)
+
         self.crt = gtk.CellRendererText()
-        self.column.pack_start(self.crt,True)
+        self.column.pack_start(self.crt,False)
 
         # connect stuff
         self.browser.connect("row-activated",self.on_row_activated)
@@ -93,7 +100,9 @@ class ClassBrowser( gtk.VBox ):
         """ set the gtk.TreeModel that contains the current class tree.
         parser must be an instance of a subclass of ClassParserInterface. """
         self.browser.set_model(treemodel)
-        if parser: self.column.set_cell_data_func(self.crt, parser.cellrenderer)
+        if parser:
+            self.column.set_cell_data_func(self.crt, parser.cellrenderer)
+            self.column.set_cell_data_func(self.cellrendererpixbuf, parser.pixbufrenderer)
         self.parser = parser
         self.browser.queue_draw()
                 

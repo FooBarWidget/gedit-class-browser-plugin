@@ -132,8 +132,7 @@ class CTagsParser( ClassParserInterface ):
         
             # skip enums
             if self.__get_type(tokens) in 'de': continue
-            
-        
+
             #print self.__get_type(tokens),tokens[0],self.__get_parent(tokens)
         
             # append current token to parent iter, or to trunk when there is none

@@ -81,8 +81,14 @@ class ClassParserInterface:
         
 
     def cellrenderer(self, treeviewcolumn, cellrenderertext, treemodel, it):
-        """ A cell renderer callback function that controls what the browser
-        tree looks like. See gtk.TreeViewColumn.set_cell_data_func for more
-        information. """
+        """ A cell renderer callback function that controls what the text label
+        in the browser tree looks like.
+        See gtk.TreeViewColumn.set_cell_data_func for more information. """
         pass
+
         
+    def pixbufrenderer(self, treeviewcolumn, cellrendererpixbuf, treemodel, it):
+        """ A cell renderer callback function that controls what the pixmap next
+        to the label in the browser tree looks like.
+        See gtk.TreeViewColumn.set_cell_data_func for more information. """
+        cellrendererpixbuf.set_property("pixbuf",None)

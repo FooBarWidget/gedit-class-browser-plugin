@@ -22,6 +22,7 @@ import os
 import re
 import options
 from parserinterface import ClassParserInterface
+import imagelibrary
 
 #===============================================================================
 
@@ -78,6 +79,9 @@ class Token:
         if len(self.children) > 0:
             return self.children[-1].get_endline()
         return self.end
+
+        def test_nested():
+            pass
             
     def get_toplevel_class(self):
         """ Try to get the class a token is in. """
@@ -248,6 +252,10 @@ class PythonParser( ClassParserInterface ):
         return self.browsermodel
 
         
+    def __private_test_method(self):
+        pass
+
+
     def get_tag_position(self, model, path):
         tok = model.get_value( model.get_iter(path), 0 )
         return tok.pythonfile.uri, tok.start+1
@@ -281,6 +289,7 @@ class PythonParser( ClassParserInterface ):
 
 
     def cellrenderer(self, column, ctr, model, it):
+
         """ Render the browser cell according to the token it represents. """
         tok = model.get_value(it,0)
 
@@ -305,5 +314,20 @@ class PythonParser( ClassParserInterface ):
         ctr.set_property("foreground-gdk", colour)
 
 
+    def pixbufrenderer(self, column, crp, model, it):
+        tok = model.get_value(it,0)
+
+        icon = "default"
+
+        if tok.type == "class":
+            icon = "class"
+        elif tok.parent:
+
+            if tok.parent.type == "class":
+                icon = "method"
+                if tok.name[:2] == "__":
+                    icon = "method_priv"
+
+        crp.set_property("pixbuf",imagelibrary.pixbufs[icon])
 
         
