@@ -20,6 +20,7 @@ import tempfile
 import os
 
 from parserinterface import *
+import imagelibrary
 import options
 
 class CTagsParser( ClassParserInterface ):
@@ -118,8 +119,8 @@ class CTagsParser( ClassParserInterface ):
         # used to sort the list of tokens by file, then by line number
         def cmpfunc(a,b):
             # by filename
-            if a[1] < b[1]: return -1
-            if a[1] > a[1]: return 1
+            #if a[1] < b[1]: return -1
+            #if a[1] > a[1]: return 1
             
             # by line number
             if a[2] < b[2]: return -1
@@ -127,8 +128,8 @@ class CTagsParser( ClassParserInterface ):
             return 0
         
         
-        
-        for tokens in tokenlist: #sorted(tokenlist,cmpfunc):
+        # iterate through the list of tags, sorted by their line number
+        for tokens in sorted(tokenlist,cmpfunc):
         
             # skip enums
             if self.__get_type(tokens) in 'de': continue
@@ -188,7 +189,7 @@ class CTagsParser( ClassParserInterface ):
                 self.tagpath = path
                 self.minline = l
         
-        # recursively loop through the treestore
+    # recursively loop through the treestore
         model.foreach(loopfunc)
         
         if self.tagpath is None:
@@ -257,4 +258,27 @@ class CTagsParser( ClassParserInterface ):
         except: colour = gtk.gdk.Color(0,0,0)
         ctr.set_property("foreground-gdk", colour)
         
+    def pixbufrenderer(self, column, crp, model, it):
         
+        elements = {
+            "c":"class", #class name
+            "d":"define", #define (from #define XXX)
+            "e":"enum", #enumerator
+            "f":"method", #function or method name
+            "F":"default", #file name
+            "g":"enum", #enumeration name
+            "m":"default", #(of structure or class data)
+        	"p":"default", #function prototype
+		    "s":"struct", #structure name
+		    "t":"default", #typedef
+		    "u":"struct", #union name
+		    "v":"variable", #variable
+        }
+
+        try:
+            i = model.get_value(it,3)
+            icon = elements[i]
+        except:
+            icon = "default"
+
+        crp.set_property("pixbuf",imagelibrary.pixbufs[icon])
