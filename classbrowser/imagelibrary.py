@@ -15,6 +15,9 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, 
 # Boston, MA 02111-1307, USA.
 
+# The class browser pixmaps are stolen from Jesse Van Den Kieboom's
+# ctags plugin (http://live.gnome.org/Gedit/PluginCodeListing)
+
 import gtk
 import sys, os
 
