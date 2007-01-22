@@ -108,7 +108,8 @@ class ClassBrowser( gtk.VBox ):
                 
     def on_row_activated(self, treeview, path, view_column):
         if self.parser is None: return
-        path, line = self.parser.get_tag_position(self.browser.get_model(),path)
+        try: path, line = self.parser.get_tag_position(self.browser.get_model(),path)
+        except TypeError: pass
         self.__openDocumentAtLine(path, line)
 
     def __onClick(self, treeview, event):

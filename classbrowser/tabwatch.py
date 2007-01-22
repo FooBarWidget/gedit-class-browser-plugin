@@ -52,7 +52,7 @@ class TabWatch:
         doc = self.geditwindow.get_active_document()
         if doc != self.currentDoc: self.__update()
 
-    def __register(self, doc,tab):
+    def __register(self, doc, tab):
         if doc is None: return
         uri = doc.get_uri()
         if uri in self.openfiles: return

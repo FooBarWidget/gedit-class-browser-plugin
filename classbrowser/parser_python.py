@@ -26,7 +26,7 @@ import imagelibrary
 
 #===============================================================================
 
-def tokenFromString(string):
+def functionTokenFromString(string):
     """ Parse a string containing a function or class definition and return
         a tuple containing information about the function, or None if the
         parsing failed.
@@ -46,13 +46,15 @@ def tokenFromString(string):
         token.original = string
         return token
     except: return None # return None to skip if unable to parse
-    
-    def test():
-        pass
+
 
 #===============================================================================
 
 class Token:
+    """ Rules: 
+            type "attribute" may only be nested to "class"
+    """
+
     def __init__(self):
         self.type = None
         self.original = None # the line in the file, unparsed
@@ -63,7 +65,7 @@ class Token:
         self.params = None   # string containing additional info
         self.expanded = False
 
-        # start and end points
+        # start and end points (line number)
         self.start = 0
         self.end = 0
 
@@ -71,7 +73,9 @@ class Token:
         self.path = None # save the position in the browser
 
         self.parent = None
-        self.children = []
+        self.children = [] # a list of nested tokens
+        self.attributes = [] # a list of class attributes
+        
 
     def get_endline(self):
         """ Get the line number where this token's declaration, including all
@@ -118,14 +122,12 @@ class PythonFile(Token):
         self.name = os.path.basename(self.uri)
         self.tokens = []
 
-
     def getTokenAtLine(self, line):
         """ get the token at the specified line number """
         for token in self.tokens:
             if token.start <= line and token.end > line:
                 return token
-        return None
-
+        return None          
 
     def parse(self, verbose=True):
 
@@ -152,7 +154,7 @@ class PythonFile(Token):
 
             if ln[0] in ("class","def","#class","#def"):
 
-                token = tokenFromString(lstrip)
+                token = functionTokenFromString(lstrip)
                 if token is None: continue
                 token.indent = len(line)-len(lstrip) 
                 token.pythonfile = self
@@ -196,9 +198,25 @@ class PythonFile(Token):
                 idx = len(newtokenlist) - 1
                 if idx < len(self.tokens):
                     if newtokenlist[idx].original == self.tokens[idx].original:
-                        newtokenlist[idx].expanded = self.tokens[idx].expanded
+                        newtokenlist[idx].expanded = self.tokens[idx].expanded             
                 lastToken = token
                 indent = token.indent
+
+            # not a class or function definition
+            else: 
+                
+                # check for class attributes, append to last class in last token
+                try:
+                    # must match "self.* ="
+                    if ln[0][:5] == "self." and ln[1] == "=":
+                    
+                        # make sure there is only one dot in the declaration
+                        # -> attribute is direct descendant of the class
+                        if lastToken and ln[0].count(".") == 1:
+                            attr = ln[0].split(".")[1]
+                            self.__appendClassAttribute(lastToken,attr,linecount)
+                        
+                except IndexError: pass
 
         # set the ending line of the last token
         if len(newtokenlist) > 0:
@@ -208,7 +226,27 @@ class PythonFile(Token):
         self.tokens = newtokenlist
         return True
 
-
+    def __appendClassAttribute(self, token, attrName, linenumber):
+        """ Append a class attribute to the class a given token belongs to. """
+        
+        # get next parent class
+        while token.type != "class":
+            token = token.parent
+            if not token: return   
+            
+        # make sure attribute is not set yet
+        for i in token.attributes:
+            if i.name == attrName: return
+                     
+        # append a new attribute
+        attr = Token()
+        attr.type = "attribute"
+        attr.name = attrName
+        attr.start = linenumber
+        attr.end = linenumber
+        attr.pythonfile = self
+        token.attributes.append(attr)
+        
 #===============================================================================
 
 class PythonParser( ClassParserInterface ):
@@ -226,12 +264,25 @@ class PythonParser( ClassParserInterface ):
 
 
     def appendTokenToBrowser(self, token, parentit ):
-        it = self.browsermodel.append(parentit,(token,))
-        token.path = self.browsermodel.get_path(it)
+        it = self.__browsermodel.append(parentit,(token,))
+        token.path = self.__browsermodel.get_path(it)
+        
+        # add special subtree for attributes
+        if len(token.attributes) > 0:
+        
+            holder = Token()
+            holder.name = "Attributes"
+            holder.type = "attribute"
+            it2 = self.__browsermodel.append(it,(holder,))
+            
+            for child in token.attributes   :
+                self.__browsermodel.append(it2,(child,))
+        
         #if token.parent:
         #    if token.parent.expanded:
         #        self.browser.expand_row(token.parent.path,False)
         #        pass
+        
         for child in token.children:
             self.appendTokenToBrowser(child, it)
 
@@ -246,19 +297,16 @@ class PythonParser( ClassParserInterface ):
     
         self.pythonfile = PythonFile(doc)
         self.pythonfile.parse(options.singleton().verbose)
-        self.browsermodel = gtk.TreeStore(gobject.TYPE_PYOBJECT)
+        self.__browsermodel = gtk.TreeStore(gobject.TYPE_PYOBJECT)
         for child in self.pythonfile.children:
             self.appendTokenToBrowser(child,None)
-        return self.browsermodel
-
+        return self.__browsermodel
         
-    def __private_test_method(self):
-        pass
-
 
     def get_tag_position(self, model, path):
         tok = model.get_value( model.get_iter(path), 0 )
-        return tok.pythonfile.uri, tok.start+1
+        try: return tok.pythonfile.uri, tok.start+1
+        except: return None
 
 
     def current_line_changed(self, doc, line):
@@ -300,7 +348,7 @@ class PythonParser( ClassParserInterface ):
 
         # set label and colour
         if tok.type == "class":
-            name = "class "+name
+            name = "class "+name+tok.params
             colour = options.singleton().colours[ "class" ]
             weight = 600
         if tok.comment: name = "#"+name
@@ -317,16 +365,20 @@ class PythonParser( ClassParserInterface ):
     def pixbufrenderer(self, column, crp, model, it):
         tok = model.get_value(it,0)
 
-        icon = "default"
+        icon = "method" # for normal defs
 
         if tok.type == "class":
             icon = "class"
+        elif tok.type == "attribute":
+            if tok.name[:2] == "__": icon = "field_priv"
+            else: icon = "field"
         elif tok.parent:
 
             if tok.parent.type == "class":
                 icon = "method"
                 if tok.name[:2] == "__":
                     icon = "method_priv"
+
 
         crp.set_property("pixbuf",imagelibrary.pixbufs[icon])
 
