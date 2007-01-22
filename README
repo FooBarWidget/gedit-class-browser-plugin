@@ -1,0 +1,16 @@
+-- CLASS BROWSER PLUGIN --
+
+This is a development release of the class browser plugin for gedit.
+It works on with recent gedit versions. 
+
+It contains two code parsers:
+ * a generic parser based on ctags-exuberant (ctags must be installed)
+ * a python parser
+
+For questions or suggestions, mail me at <fredericback@gmail.com>
+
+
+-- INSTALLATION --
+
+Put the content of this directory in your ~/.gnome2/gedit/plugins directory
+and restart gedit. Enable the plugin under Edit->Preferences
