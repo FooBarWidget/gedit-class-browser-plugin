@@ -43,10 +43,14 @@ pixbufs = {
 def initialise():
     for key in pixbufs:
         try:
-            filename = sys.path[0]+os.sep+"classbrowser"+os.sep+"pixmaps"+os.sep+key+".png"
+            name = "%s.png" % key
+            filename = os.path.join(sys.path[0],"classbrowser","pixmaps",name)
+            if not os.path.exists(filename):
+                filename = os.path.join(os.path.dirname(__file__),"pixmaps",name)
             pixbufs[key] = gtk.gdk.pixbuf_new_from_file(filename)
         except:
-            pass
+            print "Class browser plugin couldn't locate",filename
+
 
 
 
