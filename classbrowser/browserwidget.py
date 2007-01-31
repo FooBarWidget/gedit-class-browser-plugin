@@ -78,7 +78,6 @@ class ClassBrowser( gtk.VBox ):
         self.browser.connect("row-activated",self.on_row_activated)
         self.show_all()
 
-        
     def history_back(self, widget):
         if self.history_pos == 0: return
         self.history_pos -= 1
@@ -137,6 +136,20 @@ class ClassBrowser( gtk.VBox ):
             for item in menuitems:
                 menu.append(item)
                 item.show()
+                
+            m = gtk.SeparatorMenuItem()
+            m.show()
+            menu.append( m )
+            
+            
+            m = gtk.CheckMenuItem("autocollapse")
+            menu.append(m)
+            m.show()
+            m.set_active( options.singleton().autocollapse )
+            def setcollapse(w):
+                options.singleton().autocollapse = w.get_active()
+            m.connect("toggled", setcollapse )
+            
 
             menu.popup( None, None, None, event.button, event.time)
 
@@ -210,6 +223,7 @@ class ClassBrowser( gtk.VBox ):
                     path = self.parser.get_tag_at_line(self.browser.get_model(),doc,line)
                     if path:
                         self.browser.realize()
+                        if options.singleton().autocollapse: self.browser.collapse_all()
                         self.browser.expand_to_path(path)
                         self.browser.set_cursor(path)
                         if options.singleton().verbose: print "jump to", path

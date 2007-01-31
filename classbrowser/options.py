@@ -39,6 +39,7 @@ class Options(gobject.GObject):
 
         # default values
         self.verbose = False
+        self.autocollapse = True
         self.colours = {
             "class" : gtk.gdk.Color(50000,20000,20000),
             "define": gtk.gdk.Color(60000,0,0),
@@ -58,13 +59,24 @@ class Options(gobject.GObject):
             self.verbose = client.get_bool(self.__gconfDir+"/verbose") \
                 or self.verbose 
 
+            self.autocollapse = client.get_bool(self.__gconfDir+"/autocollapse") \
+                or self.autocollapse 
+
             for i in self.colours:
                 col = client.get_string(self.__gconfDir+"/colour_"+i)
                 if col: self.colours[i] = gtk.gdk.color_parse(col)
 
         except Exception, e: # catch, just in case
             print e
-        
+            
+    def __del__(self):
+        # write changes to gconf
+        client = gconf.client_get_default()
+        client.set_bool(self.__gconfDir+"/verbose", self.verbose)
+        client.set_bool(self.__gconfDir+"/autocollapse", self.autocollapse)
+        for i in self.colours:
+            client.set_string(self.__gconfDir+"/colour_"+i, self.color_to_hex(self.colours[i]))
+
     def create_configure_dialog(self):
         win = gtk.Window()
         win.connect("delete-event",lambda w,e: w.destroy())
@@ -84,6 +96,12 @@ class Options(gobject.GObject):
         verbose = gtk.CheckButton("show debug information")
         verbose.set_active(self.verbose)
         box.pack_start(verbose,False,False,6)
+        vbox2.pack_start(box,False)
+
+        box = gtk.HBox()
+        autocollapse = gtk.CheckButton("autocollapse symbol tree")
+        autocollapse.set_active(self.autocollapse)
+        box.pack_start(autocollapse,False,False,6)
         vbox2.pack_start(box,False)
 
         notebook.append_page(vbox2,gtk.Label("General"))
@@ -107,13 +125,15 @@ class Options(gobject.GObject):
 
             # set class attributes
             self.verbose = verbose.get_active()
+            self.autocollapse = autocollapse.get_active()
             for i in self.colours:
                 self.colours[i] = button[i].get_color()
-
+                
             # write changes to gconf
             client = gconf.client_get_default()
 
             client.set_bool(self.__gconfDir+"/verbose", self.verbose)
+            client.set_bool(self.__gconfDir+"/autocollapse", self.autocollapse)
             for i in self.colours:
                 client.set_string(self.__gconfDir+"/colour_"+i, self.color_to_hex(self.colours[i]))
 
