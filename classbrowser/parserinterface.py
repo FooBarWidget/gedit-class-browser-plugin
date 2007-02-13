@@ -19,16 +19,19 @@
 class ClassParserInterface:
     """ An abstract interface for class parsers.
     
-    A class parser monitors gedit documents and provides a gtk.TreeModel that contains
-    the browser tree. Elements in the browser tree are called 'tags'.
+    A class parser monitors gedit documents and provides a gtk.TreeModel
+    that contains the browser tree. Elements in the browser tree are reffered
+    to as 'tags'.
     
-    It can control the look of the tree and set its font, colour or
-    size.
-     
-    It can provide a custom set of actions that will be integrated in
-    the context menu of the browser when the user right clicks on it.
+    There is always only *one* active instance of each parser. They are created
+    at startup (in __init__.py).
+    
+    The best way to implement a new parser is probably to store custom python
+    objects in a gtk.treestore or gtk.liststore, and to provide a cellrenderer
+    to render them.
     """
-
+    
+    #------------------------------------- methods that *have* to be implemented
     
     def parse(self, geditdoc): 
         """ Parse a gedit.Document and return a gtk.TreeModel. 
@@ -37,13 +40,30 @@ class ClassParserInterface:
         """
         pass        
         
+        
+    def cellrenderer(self, treeviewcolumn, cellrenderertext, treemodel, it):
+        """ A cell renderer callback function that controls what the text label
+        in the browser tree looks like.
+        See gtk.TreeViewColumn.set_cell_data_func for more information. """
+        pass
+        
+    #------------------------------------------- methods that can be implemented
+   
+    def pixbufrenderer(self, treeviewcolumn, cellrendererpixbuf, treemodel, it):
+        """ A cell renderer callback function that controls what the pixmap next
+        to the label in the browser tree looks like.
+        See gtk.TreeViewColumn.set_cell_data_func for more information. """
+        cellrendererpixbuf.set_property("pixbuf",None)
+        
+        
     def get_tag_position(self, model, path):
-        """ Return the position of a tag in a file.
+        """ Return the position of a tag in a file. This is used by the browser
+        to jump to a symbol's position.
         
         Returns a tuple with the full file uri of the source file and the line
         number of the tag or None if the tag has no correspondance in a file.
         
-        model -- a gtk.TreeModel (previously provided by parse()
+        model -- a gtk.TreeModel (previously provided by parse())
         path -- a tuple containing the treepath
         """
         pass
@@ -53,42 +73,30 @@ class ClassParserInterface:
         """ Return a list of gtk.Menu items for the specified tag. 
         Defaults to an empty list
         
-        model -- a gtk.TreeModel
+        model -- a gtk.TreeModel (previously provided by parse())
         path -- a tuple containing the treepath
         """
         return []
 
     
-    def current_line_changed(self, doc, line):
+    def current_line_changed(self, model, doc, line):
         """ Called when the cursor points to a different line in the document.
         Can be used to monitor changes in the document.
         
+        model -- a gtk.TreeModel (previously provided by parse())
         doc -- a gedit document
         line -- int
         """
-        pass    
+        pass
   
         
     def get_tag_at_line(self, model, doc, linenumber):
         """ Return a treepath to the tag at the given line number, or None if a
         tag can't be found.
         
-        model -- a gtk.TreeModel
+        model -- a gtk.TreeModel (previously provided by parse())
         doc -- a gedit document
         linenumber -- int
         """
         pass
         
-
-    def cellrenderer(self, treeviewcolumn, cellrenderertext, treemodel, it):
-        """ A cell renderer callback function that controls what the text label
-        in the browser tree looks like.
-        See gtk.TreeViewColumn.set_cell_data_func for more information. """
-        pass
-
-        
-    def pixbufrenderer(self, treeviewcolumn, cellrendererpixbuf, treemodel, it):
-        """ A cell renderer callback function that controls what the pixmap next
-        to the label in the browser tree looks like.
-        See gtk.TreeViewColumn.set_cell_data_func for more information. """
-        cellrendererpixbuf.set_property("pixbuf",None)

@@ -309,7 +309,7 @@ class PythonParser( ClassParserInterface ):
         except: return None
 
 
-    def current_line_changed(self, doc, line):
+    def current_line_changed(self, model, doc, line):
 
         # parse again if line count changed
         if abs(self.pythonfile.linestotal - doc.get_line_count()) > 0:

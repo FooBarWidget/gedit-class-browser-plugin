@@ -107,11 +107,15 @@ class ClassBrowser( gtk.VBox ):
                 
     def on_row_activated(self, treeview, path, view_column):
         if self.parser is None: return
-        try: path, line = self.parser.get_tag_position(self.browser.get_model(),path)
-        except TypeError: pass
-        self.__openDocumentAtLine(path, line)
+        try:
+            path, line = self.parser.get_tag_position(self.browser.get_model(),path)
+            self.__openDocumentAtLine(path, line)
+        except:
+            pass
+        
 
     def __onClick(self, treeview, event):
+
         if event.button == 3:
             x, y = int(event.x), int(event.y)
             pthinfo = treeview.get_path_at_pos(x, y)
@@ -216,7 +220,7 @@ class ClassBrowser( gtk.VBox ):
                 if options.singleton().verbose: print "current line:",line
 
                 # pipe the current line to the parser
-                self.parser.current_line_changed(doc, line)
+                self.parser.current_line_changed(self.browser.get_model(), doc, line)
 
                 # set cursor on the tag the cursor is pointing to
                 try:
