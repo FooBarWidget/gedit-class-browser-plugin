@@ -128,12 +128,11 @@ class ClassBrowser( gtk.VBox ):
 
             tagpos = self.parser.get_tag_position(self.browser.get_model(),path)
             if tagpos is not None:
-                path, line = tagpos
-
+                filename, line = tagpos
                 m = gtk.ImageMenuItem(gtk.STOCK_JUMP_TO)
                 menu.append(m)
                 m.show()
-                m.connect("activate", lambda w,p,l: self.__openDocumentAtLine(p,l), path, line )
+                m.connect("activate", lambda w,p,l: self.__openDocumentAtLine(p,l), filename, line )
 
             # add the menu items from the parser
             menuitems = self.parser.get_menu(self.browser.get_model(),path)
