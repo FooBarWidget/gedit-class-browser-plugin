@@ -56,7 +56,7 @@ class Token:
     """
 
     def __init__(self):
-        self.type = None
+        self.type = None # "attribute", "class" or "function"
         self.original = None # the line in the file, unparsed
 
         self.indent = 0
@@ -158,6 +158,8 @@ class PythonFile(Token):
                 if token is None: continue
                 token.indent = len(line)-len(lstrip) 
                 token.pythonfile = self
+                
+                token.original = line
 
                 # set start and end line of a token. The end line will get set
                 # when the next token is parsed.
@@ -198,7 +200,7 @@ class PythonFile(Token):
                 idx = len(newtokenlist) - 1
                 if idx < len(self.tokens):
                     if newtokenlist[idx].original == self.tokens[idx].original:
-                        newtokenlist[idx].expanded = self.tokens[idx].expanded             
+                        newtokenlist[idx].expanded = self.tokens[idx].expanded
                 lastToken = token
                 indent = token.indent
 
@@ -259,7 +261,8 @@ class PythonParser( ClassParserInterface ):
     and http://ctags.sourceforge.net/FORMAT for a description of the file format.
     """
     
-    def __init__(self):
+    def __init__(self, geditwindow):
+        self.geditwindow = geditwindow
         self.pythonfile = None
 
 
@@ -285,6 +288,36 @@ class PythonParser( ClassParserInterface ):
         
         for child in token.children:
             self.appendTokenToBrowser(child, it)
+
+
+    def get_menu(self, model, path):
+        """ The context menu is expanded if the python tools plugin and
+            bicyclerepairman are available. """
+    
+        menuitems = []
+    
+        try: tok = model.get_value( model.get_iter(path), 0 )
+        except: tok = None
+        pt = self.geditwindow.get_data("PythonToolsPlugin")
+        tagposition = self.get_tag_position(model,path)
+        
+        if pt and tok and tagposition:
+        
+            filename, line = tagposition # unpack the location of the token
+            if tok.type in ["def","class"] and filename[:7] == "file://":
+            
+                print tok.original
+            
+                # trunkate to local filename
+                filename = filename[7:]
+                column = tok.original.find(tok.name) # find beginning of function definition
+                print filename, line, column
+                
+                item = gtk.MenuItem("Find References")
+                menuitems.append(item)
+                item.connect("activate",lambda w: pt.brm.findReferencesDialog(filename,line,column))
+            
+        return menuitems
 
 
     def parse(self, doc):

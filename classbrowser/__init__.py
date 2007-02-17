@@ -68,9 +68,10 @@ class ClassBrowserPlugin(gedit.Plugin):
     def is_configurable(self):
         return True
 
-    def register_parsers(self):
+    def register_parsers(self, window):
+        """ Add new parsers here. """
         self.tabwatch.defaultparser = CTagsParser()
-        self.tabwatch.register_parser("Python",PythonParser())
+        self.tabwatch.register_parser("Python",PythonParser(window))
 
     def activate(self, window):
 
@@ -96,7 +97,7 @@ class ClassBrowserPlugin(gedit.Plugin):
         manager = window.get_ui_manager()
         windowdata["ui_id"] = manager.new_merge_id ()
 
-        self.register_parsers()
+        self.register_parsers(window)
 
     def deactivate(self, window):
         pane = window.get_side_panel()
