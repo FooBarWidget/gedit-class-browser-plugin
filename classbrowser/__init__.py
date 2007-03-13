@@ -15,25 +15,14 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, 
 # Boston, MA 02111-1307, USA.
 
-"""
-
-TODO-List:
-[x] determine language by looking at the sourceview language instead of the mime
-[x] enable colours in the python cell renderer
-[ ] add byciclerepairman support to the python browser context menu (if available)
-
-"""
-
-
 import gedit
 import gtk
 from browserwidget import ClassBrowser
 from tabwatch import TabWatch
-        
 import options
-
 from parser_ctags import CTagsParser
 from parser_python import PythonParser
+from parser_ruby import RubyParser
 
 icon = [
 "16 16 2 1",
@@ -72,6 +61,7 @@ class ClassBrowserPlugin(gedit.Plugin):
         """ Add new parsers here. """
         self.tabwatch.defaultparser = CTagsParser()
         self.tabwatch.register_parser("Python",PythonParser(window))
+        self.tabwatch.register_parser("Ruby",RubyParser())
 
     def activate(self, window):
 

@@ -46,7 +46,7 @@ class Options(gobject.GObject):
             "enumerator": gtk.gdk.Color(0,0,0),
             "member" : gtk.gdk.Color(0,0,60000),
             "function" : gtk.gdk.Color(50000,0,60000),
-
+            "namespace" : gtk.gdk.Color(0,20000,0),
         }
     
         # create gconf directory if not set yet
