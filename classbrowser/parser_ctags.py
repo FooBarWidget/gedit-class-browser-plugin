@@ -18,6 +18,7 @@
 import gtk
 import tempfile
 import os
+import gnomevfs
 
 from parserinterface import *
 import imagelibrary
@@ -78,6 +79,10 @@ class CTagsParser( ClassParserInterface ):
             arg = path + os.sep + filename[:filename.rfind(".")] + ".*"
         else:
             arg = docpath
+            
+        # simply replacing blanks is the best variant because both gnomevfs
+        # and the fs understand it.
+        arg = arg.replace(" ","\ ")
         
         # create tempfile
         h, tmpfile = tempfile.mkstemp()
@@ -86,10 +91,14 @@ class CTagsParser( ClassParserInterface ):
         command = "ctags -n -f %s %s"%(tmpfile,arg)
         os.system(command)
         
-        #print "command:",command
+        print "command:",command
         
         # create list of tokens from the ctags file-------------------------
-        tokenlist = []
+        
+        # A list of lists. Matches the order found in tag files.
+        # identifier, path to file, line number, type, and then more magical things
+        tokenlist = [] 
+        
         h = open(tmpfile)
         enumcounter = 0
         for r in h.readlines():
@@ -107,7 +116,6 @@ class CTagsParser( ClassParserInterface ):
             # hack: remember the number of enums without parents for later grouping
             if self.__get_type(tokens) == 'e' and self.__get_parent(tokens) == None:
                 enumcounter += 1
-
 
         # add tokens to the treestore---------------------------------------
         containers = { None: None } # keep dict: token's name -> treeiter
@@ -129,6 +137,7 @@ class CTagsParser( ClassParserInterface ):
         
         
         # iterate through the list of tags, sorted by their line number
+        # a token is a list. Order matches tag file order (name,path,line,type,...)
         for tokens in sorted(tokenlist,cmpfunc):
         
             # skip enums
@@ -147,6 +156,10 @@ class CTagsParser( ClassParserInterface ):
                 # create a dummy element in case the parent doesn't exist
                 node = ls.append( None, [parent,"",0,""] )
                 containers[parent] = node
+            
+            # escape blanks in file path
+            tokens[1] = str( gnomevfs.get_uri_from_local_path(tokens[1]) )
+            
             
             # make sure tokens[4] contains type code
             if len(tokens) == 3: tokens.append("")
@@ -169,7 +182,7 @@ class CTagsParser( ClassParserInterface ):
         filepath = model.get_value( model.get_iter(path), 1 )
         linenumber = model.get_value( model.get_iter(path), 2 )
         if filepath == "": return None
-        return "file://"+filepath, linenumber
+        return filepath, linenumber
 
 
     def get_tag_at_line(self, model, doc, linenumber):
