@@ -56,7 +56,7 @@ class ClassParserInterface:
         cellrendererpixbuf.set_property("pixbuf",None)
         
         
-    def get_tag_position(self, model, path):
+    def get_tag_position(self, model, doc, path):
         """ Return the position of a tag in a file. This is used by the browser
         to jump to a symbol's position.
         

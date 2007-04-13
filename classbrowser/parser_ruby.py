@@ -280,7 +280,7 @@ class RubyParser( ClassParserInterface ):
         pass
 
 
-    def get_tag_position(self, model, path):
+    def get_tag_position(self, model, doc, path):
         tok = model.get_value( model.get_iter(path), 0 )
         return tok.rubyfile.uri, tok.start+1
 
