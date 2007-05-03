@@ -155,8 +155,68 @@ class ClassBrowser( gtk.VBox ):
             
 
             menu.popup( None, None, None, event.button, event.time)
+ 
+    def get_current_iter(self):
+       doc = self.geditwindow.get_active_document() 
+       iter = None
+       path = None
+       if doc and self.parser:
+            it = doc.get_iter_at_mark(doc.get_insert())
+            line = it.get_line()            
+            model = self.browser.get_model()
+            path = self.parser.get_tag_at_line(model, doc, line)
+            #if there is no current tag, get the root
+            if path is None: 
+                iter = model.get_iter_root()
+                path = model.get_path(iter)
+            else:
+                #Get current tag
+                iter = model.get_iter(path)
+       return iter, path
 
+    """ Jump to next/previous tag depending on direction (0, 1)"""
+    def jump_to_tag(self, direction = 1): 
+        #use self dince python doesn't have true closures, yuck!
+        self.iter_target = None
+        self.iter_next = None
+        self.iter_found = False
 
+        def get_previous(model, path, iter, path_searched):
+             if path == path_searched:
+                self.iter_found = True
+                return True
+             self.iter_target = iter
+             return False
+
+        def get_next(model,path, iter, path_searched):
+            if self.iter_found: 
+                self.iter_target = iter
+                return True
+            if path == path_searched:  self.iter_found = True   
+            return False
+            
+        search_funcs = get_previous, get_next
+
+        if ( 0 > direction) or (len(search_funcs) <= direction):
+            print "Direction ", direction, " must be between 0 and ", len(search_funcs)
+            raise ValueError, "Invalid direction"
+
+        model = self.browser.get_model()
+        iter, path = self.get_current_iter()
+        model.foreach(search_funcs[direction], path)
+
+        if not self.iter_found: 
+            print "No target path"
+            return 
+            
+        target_path = model.get_path(self.iter_target)
+        tagpos = self.parser.get_tag_position(model, target_path)
+        if tagpos is not None:
+            path, line = tagpos
+            if options.singleton().verbose: print "jump to", path
+            self.__openDocumentAtLine(path,line)
+
+        
     def __openDocumentAtLine(self, filename, line, column=1, register_history=True):
         """ open a the file specified by filename at the given line and column
         number. Line and column numbering starts at 1. """

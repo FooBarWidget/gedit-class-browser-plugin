@@ -83,13 +83,36 @@ class ClassBrowserPlugin(gedit.Plugin):
         # store per window data in the window object
         windowdata = { "ClassBrowser" : self.classbrowser,
                        "TabWatch" : self.tabwatch }
-        
-        window.set_data("PythonToolsPluginWindowDataKey", windowdata)
-        
-        manager = window.get_ui_manager()
-        windowdata["ui_id"] = manager.new_merge_id ()
 
+        submenu = """
+            <ui>
+              <menubar name="MenuBar">
+                <menu name="EditMenu" action="Edit">
+                  <placeholder name="EditOps_5">
+                        <menuitem name="Jump to next tag" action="JumpNextTag"/>
+                        <menuitem name="Jump to previous tag" action="JumpPreviousTag"/>
+                  </placeholder>
+                </menu>
+              </menubar>
+            </ui>
+            """
+            
+        manager = window.get_ui_manager()
+        windowdata["action_group"] = gtk.ActionGroup("GeditClassBrowserPluginActions")
+        windowdata["action_group"].add_actions(
+         [('JumpNextTag', None, _('Jump to n_ext tag'), "<control>e",  _("Jump to next tag"), self.next_tag),
+          ('JumpPreviousTag', None, _('Jump to previous tag'), "<control><shift>e", _("Jump to previous tag"), self.previous_tag)], window)
+        manager.insert_action_group(windowdata["action_group"], 0)
+        windowdata["ui_id"] = manager.new_merge_id ()
+        manager.add_ui_from_string(submenu)
+        window.set_data("PythonToolsPluginWindowDataKey", windowdata)
         self.register_parsers(window)
+
+    def next_tag(self, action, window):
+        self.classbrowser.jump_to_tag(direction=1)
+    
+    def previous_tag(self, action, window):
+        self.classbrowser.jump_to_tag(direction=0)
 
     def deactivate(self, window):
         pane = window.get_side_panel()
