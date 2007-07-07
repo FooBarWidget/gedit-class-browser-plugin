@@ -127,8 +127,15 @@ class RubyFile(Token):
         """ get the token at the specified line number """
         for token in self.tokens:
             if token.start <= line and token.end > line:
-                return token
+                return self.__findInnermostTokenAtLine(token, line)
         return None
+
+    def __findInnermostTokenAtLine(self, token, line):
+        """" ruby is parsed as nested, unlike python """
+        for child in token.children:
+            if child.start <= line and child.end > line:
+                return self.__findInnermostTokenAtLine(child, line)
+        return token
 
 
     def parse(self, verbose=True):
@@ -250,8 +257,9 @@ class RubyParser( ClassParserInterface ):
 
 
     def appendTokenToBrowser(self, token, parentit ):
-        it = self.browsermodel.append(parentit,(token,))
-        token.path = self.browsermodel.get_path(it)
+        it = self.__browsermodel.append(parentit,(token,))
+        token.path = self.__browsermodel.get_path(it)
+        #print token.path
         #if token.parent:
         #    if token.parent.expanded:
         #        self.browser.expand_row(token.parent.path,False)
@@ -270,19 +278,20 @@ class RubyParser( ClassParserInterface ):
     
         self.rubyfile = RubyFile(doc)
         self.rubyfile.parse(options.singleton().verbose)
-        self.browsermodel = gtk.TreeStore(gobject.TYPE_PYOBJECT)
+        self.__browsermodel = gtk.TreeStore(gobject.TYPE_PYOBJECT)
         for child in self.rubyfile.children:
             self.appendTokenToBrowser(child,None)
-        return self.browsermodel
+        return self.__browsermodel
 
         
     def __private_test_method(self):
         pass
 
 
-    def get_tag_position(self, model, doc, path):
+    def get_tag_position(self, model, path):
         tok = model.get_value( model.get_iter(path), 0 )
-        return tok.rubyfile.uri, tok.start+1
+        try: return tok.rubyfile.uri, tok.start+1
+        except: return None
 
 
     def current_line_changed(self, model, doc, line):
