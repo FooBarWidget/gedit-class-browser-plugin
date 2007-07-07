@@ -62,6 +62,7 @@ class ClassBrowser( gtk.VBox ):
         self.browser.set_headers_visible(False)
         sw.add(self.browser)
         self.browser.connect("button_press_event",self.__onClick)
+        
         self.pack_start(sw)
 
         # add a text column to the treeview
@@ -95,6 +96,7 @@ class ClassBrowser( gtk.VBox ):
         if self.history_pos+1 >= len(self.document_history):
             self.forward.set_sensitive(False)
 
+
     def set_model(self, treemodel, parser=None):
         """ set the gtk.TreeModel that contains the current class tree.
         parser must be an instance of a subclass of ClassParserInterface. """
@@ -104,18 +106,30 @@ class ClassBrowser( gtk.VBox ):
             self.column.set_cell_data_func(self.cellrendererpixbuf, parser.pixbufrenderer)
         self.parser = parser
         self.browser.queue_draw()
-                
-    def on_row_activated(self, treeview, path, view_column):
-        if self.parser is None: return
+              
+              
+    def __jump_to_tag(self, path):
         try:
             path, line = self.parser.get_tag_position(self.browser.get_model(),path)
             self.__openDocumentAtLine(path, line)
         except:
             pass
-        
+                
+                
+    def on_row_activated(self, treeview, path, view_column):
+        if self.parser: self.__jump_to_tag(path)
+
 
     def __onClick(self, treeview, event):
 
+        if event.button == 2:
+            if options.singleton().jumpToTagOnMiddleClick:
+                x, y = int(event.x), int(event.y)
+                pthinfo = treeview.get_path_at_pos(x, y)
+                if pthinfo is None: return
+                path, col, cellx, celly = pthinfo
+                self.__jump_to_tag(path)
+            
         if event.button == 3:
             x, y = int(event.x), int(event.y)
             pthinfo = treeview.get_path_at_pos(x, y)
@@ -153,8 +167,10 @@ class ClassBrowser( gtk.VBox ):
                 options.singleton().autocollapse = w.get_active()
             m.connect("toggled", setcollapse )
             
-
             menu.popup( None, None, None, event.button, event.time)
+            
+            
+          
  
     def get_current_iter(self):
        doc = self.geditwindow.get_active_document() 

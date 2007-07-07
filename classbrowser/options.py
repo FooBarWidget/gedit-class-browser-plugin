@@ -40,6 +40,7 @@ class Options(gobject.GObject):
         # default values
         self.verbose = False
         self.autocollapse = True
+        self.jumpToTagOnMiddleClick = False
         self.colours = {
             "class" : gtk.gdk.Color(50000,20000,20000),
             "define": gtk.gdk.Color(60000,0,0),
@@ -62,6 +63,9 @@ class Options(gobject.GObject):
             self.autocollapse = client.get_bool(self.__gconfDir+"/autocollapse") \
                 or self.autocollapse 
 
+            self.jumpToTagOnMiddleClick = client.get_bool(self.__gconfDir+"/jumpToTagOnMiddleClick") \
+                or self.jumpToTagOnMiddleClick 
+
             for i in self.colours:
                 col = client.get_string(self.__gconfDir+"/colour_"+i)
                 if col: self.colours[i] = gtk.gdk.color_parse(col)
@@ -74,6 +78,7 @@ class Options(gobject.GObject):
         client = gconf.client_get_default()
         client.set_bool(self.__gconfDir+"/verbose", self.verbose)
         client.set_bool(self.__gconfDir+"/autocollapse", self.autocollapse)
+        client.set_bool(self.__gconfDir+"/jumpToTagOnMiddleClick", self.jumpToTagOnMiddleClick)
         for i in self.colours:
             client.set_string(self.__gconfDir+"/colour_"+i, self.color_to_hex(self.colours[i]))
 
@@ -104,6 +109,12 @@ class Options(gobject.GObject):
         box.pack_start(autocollapse,False,False,6)
         vbox2.pack_start(box,False)
 
+        box = gtk.HBox()
+        jumpToTagOnMiddleClick = gtk.CheckButton("jump to tag on middle click")
+        jumpToTagOnMiddleClick.set_active(self.jumpToTagOnMiddleClick)
+        box.pack_start(jumpToTagOnMiddleClick,False,False,6)
+        vbox2.pack_start(box,False)
+
         notebook.append_page(vbox2,gtk.Label("General"))
 
         #--------------------------------       
@@ -126,6 +137,7 @@ class Options(gobject.GObject):
             # set class attributes
             self.verbose = verbose.get_active()
             self.autocollapse = autocollapse.get_active()
+            self.jumpToTagOnMiddleClick = jumpToTagOnMiddleClick.get_active()
             for i in self.colours:
                 self.colours[i] = button[i].get_color()
                 
@@ -134,6 +146,7 @@ class Options(gobject.GObject):
 
             client.set_bool(self.__gconfDir+"/verbose", self.verbose)
             client.set_bool(self.__gconfDir+"/autocollapse", self.autocollapse)
+            client.set_bool(self.__gconfDir+"/jumpToTagOnMiddleClick", self.jumpToTagOnMiddleClick)
             for i in self.colours:
                 client.set_string(self.__gconfDir+"/colour_"+i, self.color_to_hex(self.colours[i]))
 
