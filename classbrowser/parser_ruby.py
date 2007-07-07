@@ -160,8 +160,9 @@ class RubyFile(Token):
             lstrip = line.lstrip()
             ln = lstrip.split()
             if len(ln) == 0: continue
+            if ln[0] == '#': continue
             
-            if ln[0] in ("class","module","def","#class","#module","#def"):
+            if ln[0] in ("class","module","def"):
                 token = tokenFromString(lstrip)
                 if token is None: continue
                 token.rubyfile = self
@@ -233,7 +234,7 @@ class RubyFile(Token):
                 if len(ln) == 1:
                     access = ln[0]
                     
-            if re.search(r";?\s*end\s*$", line):
+            if re.search(r";?\s*end(?:\s*$|\s+(?:while|until))", line):
                 if ends_to_skip > 0:
                     ends_to_skip -= 1
                 else:
