@@ -204,10 +204,34 @@ class RubyFile(Token):
                         currentParent.children.append(token)
                         token.parent = currentParent
                         newtokenlist.append(token)
-                        
+            
             elif re.search(r"\sdo(\s+\|.*?\|)?\s*(#|$)", line):
                 #print "do",line
-                if ln[0] in ("context","specify","setup","teardown","context_setup","context_teardown"):
+
+                # Support for new style RSpec
+                if re.match(r"^(describe|it|before|after)\b", ln[0]):
+                    token = Token()
+                    token.rubyfile = self
+                    token.start = linecount
+                    
+                    if currentParent.type == "describe":                    
+                        if ln[0] == "it":
+                            token.name = " ".join(ln[1:-1])
+                        else:
+                            token.name = ln[0]
+                        token.type = "def"
+                    elif ln[0] == "describe":
+                        token.type = "describe"
+                        token.name = " ".join(ln[1:-1])
+                    else:
+                        continue
+                    currentParent.children.append(token)
+                    token.parent = currentParent
+                    currentParent = token
+                    newtokenlist.append(token)
+
+                # Deprectated support for old style RSpec, will be removed later
+                elif ln[0] in ("context","specify","setup","teardown","context_setup","context_teardown"):
                     token = Token()
                     token.rubyfile = self
                     token.start = linecount
@@ -343,6 +367,13 @@ class RubyParser( ClassParserInterface ):
             colour = options.singleton().colours[ "namespace" ]
             weight = 600
             
+        # new style RSpec
+        elif tok.type == "describe":
+            name = "describe "+name
+            colour = options.singleton().colours[ "namespace" ]
+            weight = 600
+        
+        # Old style RSpec, deprecated    
         elif tok.type == "context":
             name = "context "+name
             colour = options.singleton().colours[ "namespace" ]
@@ -367,6 +398,8 @@ class RubyParser( ClassParserInterface ):
         if tok.type == "class":
             icon = "class"
         elif tok.type == "module":
+            icon = "namespace"
+        elif tok.type == "describe":
             icon = "namespace"
         elif tok.type == "context":
             icon = "namespace"
