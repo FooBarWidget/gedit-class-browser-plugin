@@ -129,6 +129,7 @@ class ClassBrowser( gtk.VBox ):
                 if pthinfo is None: return
                 path, col, cellx, celly = pthinfo
                 self.__jump_to_tag(path)
+                return True
             
         if event.button == 3:
             x, y = int(event.x), int(event.y)
