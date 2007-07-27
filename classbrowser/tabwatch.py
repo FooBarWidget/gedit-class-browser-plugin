@@ -60,7 +60,7 @@ class TabWatch:
         tab.get_view().connect_after("notify",self.browser.on_cursor_changed)
         tab.get_view().connect_after("move-cursor",self.browser.update_cursor)
 
-        doc.set_modified(True)
+        #doc.set_modified(True)
         doc.connect("modified-changed",self.__update)
         if options.singleton().verbose: print "added:",uri
 
