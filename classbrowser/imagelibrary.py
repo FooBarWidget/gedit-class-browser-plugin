@@ -34,6 +34,7 @@ pixbufs = {
     "method_priv" : None,
     "method_prot" : None,
     "namespace" : None,
+    "patch" : None,
     "struct" : None,
     "struct_priv" : None,
     "struct_prot" : None,

@@ -24,6 +24,7 @@ from parser_ctags import CTagsParser
 from parser_python import PythonParser
 from parser_ruby import RubyParser
 from parser_html import geditHTMLParser
+from parser_diff import DiffParser
 
 icon = [
 "16 16 2 1",
@@ -64,6 +65,7 @@ class ClassBrowserPlugin(gedit.Plugin):
         self.tabwatch.register_parser("Python",PythonParser(window))
         self.tabwatch.register_parser("Ruby",RubyParser())
         self.tabwatch.register_parser("HTML",geditHTMLParser())
+        self.tabwatch.register_parser("Diff",DiffParser())
 
     def activate(self, window):
 
