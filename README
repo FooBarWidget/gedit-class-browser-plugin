@@ -6,6 +6,8 @@ It works on with recent gedit versions.
 It contains two code parsers:
  * a generic parser based on ctags-exuberant (ctags must be installed)
  * a python parser
+ * a ruby parser
+ * a parser for diff files
 
 For questions or suggestions, mail me at <fredericback@gmail.com>
 
