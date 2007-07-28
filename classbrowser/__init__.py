@@ -52,12 +52,15 @@ class ClassBrowserPlugin(gedit.Plugin):
 
     def __init__(self):
         gedit.Plugin.__init__(self)
+        
 
     def create_configure_dialog(self):
         return options.singleton().create_configure_dialog()
 
+
     def is_configurable(self):
         return True
+        
 
     def register_parsers(self, window):
         """ Add new parsers here. """
@@ -66,6 +69,7 @@ class ClassBrowserPlugin(gedit.Plugin):
         self.tabwatch.register_parser("Ruby",RubyParser())
         self.tabwatch.register_parser("HTML",geditHTMLParser())
         self.tabwatch.register_parser("Diff",DiffParser())
+
 
     def activate(self, window):
 
@@ -107,14 +111,19 @@ class ClassBrowserPlugin(gedit.Plugin):
         manager.insert_action_group(windowdata["action_group"], 0)
         windowdata["ui_id"] = manager.new_merge_id ()
         manager.add_ui_from_string(submenu)
-        window.set_data("PythonToolsPluginWindowDataKey", windowdata)
+        window.set_data("ClassBrowserPluginWindowDataKey", windowdata)
         self.register_parsers(window)
+        
 
     def next_tag(self, action, window):
-        self.classbrowser.jump_to_tag(direction=1)
+        windowdata = window.get_data("ClassBrowserPluginWindowDataKey")
+        windowdata["ClassBrowser"].jump_to_tag(direction=1)
+        
     
     def previous_tag(self, action, window):
-        self.classbrowser.jump_to_tag(direction=0)
+        windowdata = window.get_data("ClassBrowserPluginWindowDataKey")
+        windowdata["ClassBrowser"].jump_to_tag(direction=0)
+        
 
     def deactivate(self, window):
         pane = window.get_side_panel()
@@ -123,6 +132,7 @@ class ClassBrowserPlugin(gedit.Plugin):
         manager = window.get_ui_manager()
         #manager.remove_ui(windowdata["ui_id"])
         manager.remove_action_group(windowdata["action_group"])
+        
 
     def update_ui(self, window):
         view = window.get_active_view()

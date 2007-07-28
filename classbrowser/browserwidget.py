@@ -78,6 +78,7 @@ class ClassBrowser( gtk.VBox ):
         # connect stuff
         self.browser.connect("row-activated",self.on_row_activated)
         self.show_all()
+        
 
     def history_back(self, widget):
         if self.history_pos == 0: return
@@ -86,6 +87,7 @@ class ClassBrowser( gtk.VBox ):
         self.__openDocumentAtLine( entry[0],entry[1],entry[2],False )
         if len(self.document_history) > 1: self.forward.set_sensitive(True)
         if self.history_pos <= 0: self.back.set_sensitive(False)
+            
             
     def history_forward(self, widget):
         if self.history_pos+1 > len(self.document_history): return
@@ -170,9 +172,7 @@ class ClassBrowser( gtk.VBox ):
             
             menu.popup( None, None, None, event.button, event.time)
             
-            
-          
- 
+
     def get_current_iter(self):
        doc = self.geditwindow.get_active_document() 
        iter = None
@@ -191,27 +191,38 @@ class ClassBrowser( gtk.VBox ):
                 iter = model.get_iter(path)
        return iter, path
 
+
     """ Jump to next/previous tag depending on direction (0, 1)"""
     def jump_to_tag(self, direction = 1): 
+    
         #use self dince python doesn't have true closures, yuck!
         self.iter_target = None
         self.iter_next = None
         self.iter_found = False
 
         def get_previous(model, path, iter, path_searched):
+             if path_searched is None:
+                self.iter_found = True
+                self.iter_target = model.get_iter_root()
              if path == path_searched:
                 self.iter_found = True
+                #if we are at the beginning of the tree
+                if self.iter_target is None:
+                    self.iter_target = model.get_iter_root()
                 return True
              self.iter_target = iter
              return False
 
+
         def get_next(model,path, iter, path_searched):
+            if path_searched is None:
+                self.iter_found = True
+                self.iter_target = model.get_iter_root()
             if self.iter_found: 
                 self.iter_target = iter
                 return True
             if path == path_searched:  self.iter_found = True   
             return False
-            
         search_funcs = get_previous, get_next
 
         if ( 0 > direction) or (len(search_funcs) <= direction):
@@ -222,10 +233,9 @@ class ClassBrowser( gtk.VBox ):
         iter, path = self.get_current_iter()
         model.foreach(search_funcs[direction], path)
 
-        if not self.iter_found: 
-            print "No target path"
+        if not self.iter_found or not self.iter_target: 
+            if options.singleton().verbose: print "No target path"
             return 
-            
         target_path = model.get_path(self.iter_target)
         tagpos = self.parser.get_tag_position(model, target_path)
         if tagpos is not None:
