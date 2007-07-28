@@ -67,9 +67,11 @@ class ClassBrowserPlugin(gedit.Plugin):
         self.tabwatch.defaultparser = CTagsParser()
         self.tabwatch.register_parser("Python",PythonParser(window))
         self.tabwatch.register_parser("Ruby",RubyParser())
-        self.tabwatch.register_parser("HTML",geditHTMLParser())
         self.tabwatch.register_parser("Diff",DiffParser())
 
+        htmlParser = geditHTMLParser()
+        self.tabwatch.register_parser("HTML",htmlParser)
+        self.tabwatch.register_parser("XML",htmlParser)
 
     def activate(self, window):
 
