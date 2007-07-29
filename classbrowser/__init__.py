@@ -95,10 +95,10 @@ class ClassBrowserPlugin(gedit.Plugin):
         submenu = """
             <ui>
               <menubar name="MenuBar">
-                <menu name="EditMenu" action="Edit">
-                  <placeholder name="EditOps_5">
-                        <menuitem name="Jump to next tag" action="JumpNextTag"/>
-                        <menuitem name="Jump to previous tag" action="JumpPreviousTag"/>
+                <menu name="SearchMenu" action="Search">
+                  <placeholder name="SearchOps_7">
+                        <menuitem action="JumpPreviousTag"/>
+                        <menuitem action="JumpNextTag"/>
                   </placeholder>
                 </menu>
               </menubar>
@@ -108,8 +108,15 @@ class ClassBrowserPlugin(gedit.Plugin):
         manager = window.get_ui_manager()
         windowdata["action_group"] = gtk.ActionGroup("GeditClassBrowserPluginActions")
         windowdata["action_group"].add_actions(
-         [('JumpNextTag', None, _('Jump to n_ext tag'), "<control>e",  _("Jump to next tag"), self.next_tag),
-          ('JumpPreviousTag', None, _('Jump to previous tag'), "<control><shift>e", _("Jump to previous tag"), self.previous_tag)], window)
+         [
+            # name, stock id, label, accelerator, tooltip
+          ('JumpNextTag', gtk.STOCK_GO_DOWN,_('Jump to next tag'),"<control>e", _("Jump to next tag"), self.next_tag),
+             
+          ('JumpPreviousTag', gtk.STOCK_GO_UP, _('Jump to previous tag'), "<control><shift>e",_("Jump to previous tag"), self.previous_tag)
+         ], 
+          
+          window)
+          
         manager.insert_action_group(windowdata["action_group"], 0)
         windowdata["ui_id"] = manager.new_merge_id ()
         manager.add_ui_from_string(submenu)
