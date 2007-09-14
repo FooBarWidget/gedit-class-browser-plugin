@@ -117,6 +117,8 @@ class CTagsParser( ClassParserInterface ):
             if self.__get_type(tokens) == 'e' and self.__get_parent(tokens) == None:
                 enumcounter += 1
 
+        h.close()
+
         # add tokens to the treestore---------------------------------------
         containers = { None: None } # keep dict: token's name -> treeiter
         
