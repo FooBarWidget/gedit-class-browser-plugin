@@ -86,6 +86,7 @@ class CTagsParser( ClassParserInterface ):
         
         # create tempfile
         h, tmpfile = tempfile.mkstemp()
+        os.close(h)
         
         # launch ctags
         command = "ctags -n -f %s %s"%(tmpfile,arg)
