@@ -37,6 +37,7 @@ class CTagsParser( ClassParserInterface ):
     def __init__(self):
         self.model = None
         self.document = None
+        self.parse_all_files = False
 
 
     def parse(self, doc):
@@ -75,10 +76,14 @@ class CTagsParser( ClassParserInterface ):
         
         docpath = doc.get_uri_for_display()
         path, filename = os.path.split(docpath)
-        if filename.find(".") != -1:
-            arg = path + os.sep + filename[:filename.rfind(".")] + ".*"
+        if not self.parse_all_files:
+            if filename.find(".") != -1:
+                arg = path + os.sep + filename[:filename.rfind(".")] + ".*"
+            else:
+                arg = docpath
         else:
-            arg = docpath
+            arg = path + os.sep + "*.*" 
+            
             
         # simply replacing blanks is the best variant because both gnomevfs
         # and the fs understand it.
@@ -216,9 +221,17 @@ class CTagsParser( ClassParserInterface ):
         
         
     def get_menu(self, model, path):
-        m = gtk.ImageMenuItem(gtk.STOCK_REFRESH)
-        m.connect("activate", lambda w: self.__parse_doc_to_model() )
-        return [m]
+        m1 = gtk.CheckMenuItem("Parse _All Files")
+        m1.set_active(self.parse_all_files)
+        m1.connect("toggled", lambda w: self.__set_parse_all_files_option(w.get_active()) )
+        m2 = gtk.ImageMenuItem(gtk.STOCK_REFRESH)
+        m2.connect("activate", lambda w: self.__parse_doc_to_model() )
+        return [m1,m2]
+        
+        
+    def __set_parse_all_files_option(self, onoff):
+        self.parse_all_files = onoff
+        self.__parse_doc_to_model()
         
         
     def __get_type(self, tokrow):
