@@ -18,6 +18,7 @@
 import gtk
 import tempfile
 import os
+from subprocess import *
 import gnomevfs
 
 from parserinterface import *
@@ -52,6 +53,13 @@ class CTagsParser( ClassParserInterface ):
     
         self.model = gtk.TreeStore(str,str,int,str) # see __parse_to_model
         self.document = doc
+        
+        try:
+            call("ctags --version")
+        except OSError:
+            self.model.append( None, ["Please install ctags!","",0,""] )
+            return self.model
+        
         self._parse_doc_to_model()
         return self.model
         
