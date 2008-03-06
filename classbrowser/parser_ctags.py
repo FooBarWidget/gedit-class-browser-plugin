@@ -52,11 +52,50 @@ class CTagsParser( ClassParserInterface ):
     
         self.model = gtk.TreeStore(str,str,int,str) # see __parse_to_model
         self.document = doc
-        self.__parse_doc_to_model()
+        self._parse_doc_to_model()
         return self.model
         
         
-    def __parse_doc_to_model(self):
+    def _generate_tagfile_from_document(self, doc, options = "-n"):
+        
+        try:
+            # make sure this is a local file (ie. not via ftp or something)
+            if doc.get_uri()[:4] != "file": return None
+        except: return None
+    
+        docpath = doc.get_uri_for_display()
+        path, filename = os.path.split(docpath)
+        if not self.parse_all_files:
+            if filename.find(".") != -1:
+                arg = path + os.sep + filename[:filename.rfind(".")] + ".*"
+            else:
+                arg = docpath
+        else:
+            arg = path + os.sep + "*.*"       
+            
+        # simply replacing blanks is the best variant because both gnomevfs
+        # and the fs understand it.
+        arg = arg.replace(" ","\ ")
+        
+        return self._generate_tagfile(arg,options)
+    
+    
+    def _generate_tagfile(self, filestr, options = "-n"):
+        """ filestr is a string, could be *.* or explicit paths """
+
+        # create tempfile
+        h, tmpfile = tempfile.mkstemp()
+        os.close(h)
+        
+        # launch ctags
+        command = "ctags %s -f %s %s"%(options,tmpfile,filestr)
+        print "command:",command
+        os.system(command)
+        
+        return tmpfile
+
+        
+    def _parse_doc_to_model(self):
         """ Parse the given document and write the tags to a gtk.TreeModel.
         
         The parser uses the ctags command from the shell to create a ctags file,
@@ -68,38 +107,8 @@ class CTagsParser( ClassParserInterface ):
         ls = self.model        
         ls.clear()
         
-        # make sure this is a local file (ie. not via ftp or something)
-        try:
-            if doc.get_uri()[:4] != "file": return ls
-        except:
-            return
-        
-        docpath = doc.get_uri_for_display()
-        path, filename = os.path.split(docpath)
-        if not self.parse_all_files:
-            if filename.find(".") != -1:
-                arg = path + os.sep + filename[:filename.rfind(".")] + ".*"
-            else:
-                arg = docpath
-        else:
-            arg = path + os.sep + "*.*" 
-            
-            
-        # simply replacing blanks is the best variant because both gnomevfs
-        # and the fs understand it.
-        arg = arg.replace(" ","\ ")
-        
-        # create tempfile
-        h, tmpfile = tempfile.mkstemp()
-        os.close(h)
-        
-        # launch ctags
-        command = "ctags -n -f %s %s"%(tmpfile,arg)
-        os.system(command)
-        
-        print "command:",command
-        
-        # create list of tokens from the ctags file-------------------------
+        tmpfile = self._generate_tagfile_from_document(doc)
+        if tmpfile is None: return ls
         
         # A list of lists. Matches the order found in tag files.
         # identifier, path to file, line number, type, and then more magical things
@@ -143,7 +152,6 @@ class CTagsParser( ClassParserInterface ):
             if a[2] > b[2]: return 1
             return 0
         
-        
         # iterate through the list of tags, sorted by their line number
         # a token is a list. Order matches tag file order (name,path,line,type,...)
         for tokens in sorted(tokenlist,cmpfunc):
@@ -174,6 +182,8 @@ class CTagsParser( ClassParserInterface ):
             else: tokens[3] = self.__get_type(tokens)
             
             # append to treestore
+            print tokens[:4]
+            
             it = ls.append( node, tokens[:4] )
             
             # if this element was a container, remember it's treeiter
@@ -181,9 +191,6 @@ class CTagsParser( ClassParserInterface ):
             
         # remove temp file
         os.remove(tmpfile)
-        
-        #print "------------------"
-        
         
         
     def get_tag_position(self, model, path):
@@ -225,7 +232,7 @@ class CTagsParser( ClassParserInterface ):
         m1.set_active(self.parse_all_files)
         m1.connect("toggled", lambda w: self.__set_parse_all_files_option(w.get_active()) )
         m2 = gtk.ImageMenuItem(gtk.STOCK_REFRESH)
-        m2.connect("activate", lambda w: self.__parse_doc_to_model() )
+        m2.connect("activate", lambda w: self._parse_doc_to_model() )
         return [m1,m2]
         
         
