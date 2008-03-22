@@ -1,4 +1,4 @@
-# Copyright (C) 2006 Frederic Back (fredericback@gmail.com)
+# Copyright (C) 200-2008 Frederic Back (fredericback@gmail.com)
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -133,7 +133,7 @@ class CTagsParser( ClassParserInterface ):
             
             # prepend container elements, append member elements. Do this to
             # make sure that container elements are created first.
-            if self.__is_container(tokens): tokenlist = [tokens] + tokenlist
+            if self._is_container(tokens): tokenlist = [tokens] + tokenlist
             else: tokenlist.append(tokens)
 
 
@@ -152,7 +152,7 @@ class CTagsParser( ClassParserInterface ):
             #if self.__get_type(tokens) in 'de': continue
         
             # append current token to parent iter, or to trunk when there is none
-            parent = self.__get_parent(tokens)
+            parent = self._get_parent(tokens)
             
             if parent in containers: node = containers[parent]
             else:
@@ -171,8 +171,8 @@ class CTagsParser( ClassParserInterface ):
             it = ls.append( node, tokens[:4] )
             
             # if this element was a container, remember its treeiter
-            if self.__is_container(tokens):
-                containername = self.__get_container_name(tokens)
+            if self._is_container(tokens):
+                containername = self._get_container_name(tokens)
                 containers[ containername ] = it
             
         # remove temp file
@@ -254,7 +254,7 @@ class CTagsParser( ClassParserInterface ):
         
     #----------------------------------------------- related to container tags
         
-    def __get_container_name(self, tokrow):
+    def _get_container_name(self, tokrow):
         """ Usually, we can assume that the parent's name is the same
             as the name of the token. In some cases (typedefs), this
             doesn't work (see Issue 13) """
@@ -269,7 +269,7 @@ class CTagsParser( ClassParserInterface ):
         return tokrow[0]
     
         
-    def __is_container(self, tokrow):
+    def _is_container(self, tokrow):
         """ class, enumerations, structs and unions are considerer containers.
             See Issue 13 for some issues we had with this.
         """
@@ -277,7 +277,7 @@ class CTagsParser( ClassParserInterface ):
         return False
         
         
-    def __get_parent(self, tokrow):
+    def _get_parent(self, tokrow):
         if len(tokrow) == 3: return
         # Iterate through all items in the tag.
         # TODO: Not sure if needed
@@ -309,7 +309,7 @@ class CTagsParser( ClassParserInterface ):
     def pixbufrenderer(self, column, crp, model, it):
         elements = {
             "c":"class", #class name
-            "d":"define", #define (from #define XXX)
+            "d":"default", #define (from #define XXX)
             "e":"enum", #enumerator
             "f":"method", #function or method name
             "F":"default", #file name
@@ -320,6 +320,7 @@ class CTagsParser( ClassParserInterface ):
 		    "t":"default", #typedef
 		    "u":"struct", #union name
 		    "v":"variable", #variable
+		    "n":"namespace", #namespace
         }
         try:
             i = model.get_value(it,3)
@@ -327,3 +328,4 @@ class CTagsParser( ClassParserInterface ):
         except:
             icon = "default"
         crp.set_property("pixbuf",imagelibrary.pixbufs[icon])
+        
