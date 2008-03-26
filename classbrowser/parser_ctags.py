@@ -51,9 +51,8 @@ class CTagsParser( ClassParserInterface ):
            token name, source file path, line in the source file, type code
 
         If the second str contains an empty string, it means that
-        the element has no 'physical' position in a file (see get_tag_position)        
-        """
-    
+        the element has no 'physical' position in a file (see get_tag_position)   """
+
         self.model = gtk.TreeStore(str,str,int,str) # see __parse_to_model
         self.model.set_sort_column_id(2,gtk.SORT_ASCENDING)
         self.document = doc
@@ -87,7 +86,10 @@ class CTagsParser( ClassParserInterface ):
         # and the fs understand it.
         arg = arg.replace(" ","\ ")
         
-        return self._generate_tagfile(arg,options)
+        if filename.find(".vala") :
+             return self._generate_tagfile(docpath, "-n --language-force=C#")                
+        else:         
+             return self._generate_tagfile(arg,options)
     
     
     def _generate_tagfile(self, filestr, options = "-n"):
@@ -108,21 +110,17 @@ class CTagsParser( ClassParserInterface ):
         """ Parse the given document and write the tags to a gtk.TreeModel.
         
         The parser uses the ctags command from the shell to create a ctags file,
-        then parses the file, and finally populates a treemodel.        
-        """
-        
+        then parses the file, and finally populates a treemodel. """
         # refactoring noise    
         doc = self.document
         ls = self.model        
         ls.clear()
-        
         tmpfile = self._generate_tagfile_from_document(doc)
         if tmpfile is None: return ls
         
         # A list of lists. Matches the order found in tag files.
         # identifier, path to file, line number, type, and then more magical things
         tokenlist = [] 
-        
         h = open(tmpfile)
         for r in h.readlines():
             tokens = r.strip().split("\t")
@@ -135,13 +133,10 @@ class CTagsParser( ClassParserInterface ):
             # make sure that container elements are created first.
             if self._is_container(tokens): tokenlist = [tokens] + tokenlist
             else: tokenlist.append(tokens)
-
-
         h.close()
 
         # add tokens to the treestore---------------------------------------
         containers = { None: None } # keep dict: token's name -> treeiter
-        
         
         # iterate through the list of tags, 
         # Note: Originally sorted by line number, bit it did break some
