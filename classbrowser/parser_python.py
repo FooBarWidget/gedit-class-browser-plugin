@@ -119,7 +119,8 @@ class PythonFile(Token):
         self.uri = doc.get_uri()
         self.linestotal = 0 # total line count
         self.type = "file"
-        self.name = os.path.basename(self.uri)
+        if self.uri:
+            self.name = os.path.basename(self.uri)
         self.tokens = []
 
     def getTokenAtLine(self, line):
