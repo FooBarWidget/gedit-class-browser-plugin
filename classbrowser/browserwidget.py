@@ -160,7 +160,7 @@ class ClassBrowser( gtk.VBox ):
             menu.append( m )
             
             
-            m = gtk.CheckMenuItem("autocollapse")
+            m = gtk.CheckMenuItem("Auto-_collapse")
             menu.append(m)
             m.show()
             m.set_active( options.singleton().autocollapse )

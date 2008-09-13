@@ -85,7 +85,9 @@ class Options(gobject.GObject):
     def create_configure_dialog(self):
         win = gtk.Window()
         win.connect("delete-event",lambda w,e: w.destroy())
-        win.set_title("Preferences")
+        win.set_title("Class Browser Preferences")
+        win.set_position(gtk.WIN_POS_CENTER)
+        win.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_DIALOG)
         win.set_border_width(6)
         vbox = gtk.VBox() 
 
@@ -97,23 +99,23 @@ class Options(gobject.GObject):
 
         vbox2 = gtk.VBox(spacing=6)
         vbox2.set_border_width(6)
-
+        
         box = gtk.HBox()
-        verbose = gtk.CheckButton("show debug information")
-        verbose.set_active(self.verbose)
-        box.pack_start(verbose,False,False,6)
-        vbox2.pack_start(box,False)
-
-        box = gtk.HBox()
-        autocollapse = gtk.CheckButton("autocollapse symbol tree")
+        autocollapse = gtk.CheckButton("Auto-_collapse symbol tree")
         autocollapse.set_active(self.autocollapse)
         box.pack_start(autocollapse,False,False,6)
         vbox2.pack_start(box,False)
 
         box = gtk.HBox()
-        jumpToTagOnMiddleClick = gtk.CheckButton("jump to tag on middle click")
+        jumpToTagOnMiddleClick = gtk.CheckButton("_Jump to tag on middle click")
         jumpToTagOnMiddleClick.set_active(self.jumpToTagOnMiddleClick)
         box.pack_start(jumpToTagOnMiddleClick,False,False,6)
+        vbox2.pack_start(box,False)
+        
+        box = gtk.HBox()
+        verbose = gtk.CheckButton("Show _debug information")
+        verbose.set_active(self.verbose)
+        box.pack_start(verbose,False,False,6)
         vbox2.pack_start(box,False)
 
         notebook.append_page(vbox2,gtk.Label("General"))
