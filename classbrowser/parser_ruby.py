@@ -119,7 +119,8 @@ class RubyFile(Token):
         self.uri = doc.get_uri()
         self.linestotal = 0 # total line count
         self.type = "file"
-        self.name = os.path.basename(self.uri)
+        if self.uri:
+            self.name = os.path.basename(self.uri)
         self.tokens = []
 
 
@@ -420,7 +421,7 @@ class RubyParser( ClassParserInterface ):
         
     def get_menu(self, model, path):
         tok = model.get_value( model.get_iter(path), 0 )
-        if tok:
+        if tok and tok.rubyfile.uri:
             path, filename = os.path.split(tok.rubyfile.uri);
             parentpath = os.path.split(path);
             
