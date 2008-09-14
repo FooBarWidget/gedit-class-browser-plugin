@@ -57,7 +57,7 @@ class CTagsParser( ClassParserInterface ):
         self.model.set_sort_column_id(2,gtk.SORT_ASCENDING)
         self.document = doc
         
-        if os.system("ctags --version") != 0:
+        if os.system("ctags --version >/dev/null") != 0:
             self.model.append( None, ["Please install ctags!","",0,""] )
             return self.model
         
