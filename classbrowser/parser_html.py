@@ -1,6 +1,7 @@
 from parserinterface import ClassParserInterface
 from HTMLParser import HTMLParser, HTMLParseError
 import gtk
+import options
 
 #=================================================================================================
 
@@ -24,7 +25,8 @@ class customParser(HTMLParser):
         
         lineno, offset = self.getpos()
         it = self.ls.append( self.currenttag,(tag,tagstring,lineno,0) )
-        print (tag,tagstring,lineno,0)
+        if options.singleton().verbose:
+            print (tag,tagstring,lineno,0)
         self.currenttag = it
         
                   
