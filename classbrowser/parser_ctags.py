@@ -24,6 +24,7 @@ import gnomevfs
 from parserinterface import *
 import imagelibrary
 import options
+import re
 
 
 
@@ -79,16 +80,12 @@ class CTagsParser( ClassParserInterface ):
         path, filename = os.path.split(docpath)
         if not self.parse_all_files:
             if filename.find(".") != -1:
-                arg = path + os.sep + filename[:filename.rfind(".")] + ".*"
+                arg = self.shell_escape(path + os.sep + filename[:filename.rfind(".")]) + ".*"
             else:
-                arg = docpath
+                arg = self.shell_escape(docpath)
         else:
-            arg = path + os.sep + "*.*"       
+            arg = self.shell_escape(path) + os.sep + "*.*"       
             
-        # simply replacing blanks is the best variant because both gnomevfs
-        # and the fs understand it.
-        arg = arg.replace(" ","\ ")
-        
         if filename.find(".vala") != -1:
              return self._generate_tagfile(docpath, "-n --language-force=C#")                
         else:         
@@ -103,7 +100,7 @@ class CTagsParser( ClassParserInterface ):
         os.close(h)
         
         # launch ctags
-        command = "ctags %s -f \"%s\" \"%s\""%(options,tmpfile,filestr)
+        command = "ctags %s -f \"%s\" %s"%(options,tmpfile,filestr)
         os.system(command)
         
         return tmpfile
@@ -177,6 +174,10 @@ class CTagsParser( ClassParserInterface ):
         os.remove(tmpfile)
         
         
+    def shell_escape(self, filename):
+        return re.sub(r"([ \"'\\\$])", '\\\\\\1', filename)
+    
+    
     def get_tag_position(self, model, path):
         filepath = model.get_value( model.get_iter(path), 1 )
         linenumber = model.get_value( model.get_iter(path), 2 )
