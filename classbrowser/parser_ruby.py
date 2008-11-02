@@ -259,7 +259,7 @@ class RubyFile(Token):
                 if len(ln) == 1:
                     access = ln[0]
                     
-            if re.search(r";?\s*end(?:\s*$|\s+(?:while|until))", line):
+	    if re.search(r";?\s*end(\.|,|&|\||\s|$)", line):
                 if ends_to_skip > 0:
                     ends_to_skip -= 1
                 else:
