@@ -73,6 +73,9 @@ class CTagsParser( ClassParserInterface ):
         except: return None
     
         docpath = doc.get_uri_for_display()
+	if not os.path.isfile(docpath):
+	    # don't parse the file if it doesn't exist
+	    return None
         path, filename = os.path.split(docpath)
         if not self.parse_all_files:
             if filename.find(".") != -1:
