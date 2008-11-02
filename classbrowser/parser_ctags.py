@@ -60,9 +60,9 @@ class CTagsParser( ClassParserInterface ):
         if os.system("ctags --version >/dev/null") != 0:
             self.model.append( None, ["Please install ctags!","",0,""] )
             return self.model
-        
-        self._parse_doc_to_model()
-        return self.model
+        else:
+            self._parse_doc_to_model()
+            return self.model
         
         
     def _generate_tagfile_from_document(self, doc, options = "-n"):
@@ -226,18 +226,18 @@ class CTagsParser( ClassParserInterface ):
         """ Returns a char representing the token type or False if none were found.
 
         According to the ctags docs, possible types are:
-		c	class name
-		d	define (from #define XXX)
-		e	enumerator
-		f	function or method name
-		F	file name
-		g	enumeration name
-		m	member (of structure or class data)
-		p	function prototype
-		s	structure name
-		t	typedef
-		u	union name
-		v	variable        
+            c    class name
+            d    define (from #define XXX)
+            e    enumerator
+            f    function or method name
+            F    file name
+            g    enumeration name
+            m    member (of structure or class data)
+            p    function prototype
+            s    structure name
+            t    typedef
+            u    union name
+            v    variable        
         """
         if len(tokrow) == 3: return
         for i in tokrow[3:]:
@@ -310,12 +310,12 @@ class CTagsParser( ClassParserInterface ):
             "F":"default", #file name
             "g":"enum", #enumeration name
             "m":"default", #(of structure or class data)
-        	"p":"default", #function prototype
-		    "s":"struct", #structure name
-		    "t":"default", #typedef
-		    "u":"struct", #union name
-		    "v":"variable", #variable
-		    "n":"namespace", #namespace
+            "p":"default", #function prototype
+            "s":"struct", #structure name
+            "t":"default", #typedef
+            "u":"struct", #union name
+            "v":"variable", #variable
+            "n":"namespace", #namespace
         }
         try:
             i = model.get_value(it,3)
