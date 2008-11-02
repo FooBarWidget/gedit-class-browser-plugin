@@ -100,7 +100,7 @@ class CTagsParser( ClassParserInterface ):
         os.close(h)
         
         # launch ctags
-        command = "ctags %s -f %s %s"%(options,tmpfile,filestr)
+        command = "ctags %s -f \"%s\" \"%s\""%(options,tmpfile,filestr)
         os.system(command)
         
         return tmpfile
