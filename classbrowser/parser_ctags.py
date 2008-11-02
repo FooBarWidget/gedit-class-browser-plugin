@@ -89,7 +89,7 @@ class CTagsParser( ClassParserInterface ):
         # and the fs understand it.
         arg = arg.replace(" ","\ ")
         
-        if filename.find(".vala") :
+        if filename.find(".vala") != -1:
              return self._generate_tagfile(docpath, "-n --language-force=C#")                
         else:         
              return self._generate_tagfile(arg,options)
