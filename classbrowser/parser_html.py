@@ -45,9 +45,11 @@ class geditHTMLParser( ClassParserInterface ):
 
     def parse(self, d): 
         parser = customParser()
-        try: parser.feed(d.get_text(*d.get_bounds()))
+        try:
+            parser.feed(d.get_text(*d.get_bounds()))
         except HTMLParseError, e:
-            print e.lineno, e.offset
+            if options.singleton().verbose:
+                print e, e.lineno, e.offset
             
         return parser.ls  
         
